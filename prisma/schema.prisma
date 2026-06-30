@@ -1,19 +1,183 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql" url = env("DATABASE_URL") }
-enum RoleName { OWNER ADMIN EDITOR VIEWER CUSTOMER }
-enum ProductStatus { DRAFT ACTIVE ARCHIVED }
-enum OrderStatus { DRAFT PENDING PAID FULFILLED CANCELLED REFUNDED }
-enum SubscriberStatus { SUBSCRIBED UNSUBSCRIBED }
-model User { id String @id @default(cuid()) email String @unique name String? passwordHash String? role RoleName @default(CUSTOMER) customer Customer? orders Order[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model Customer { id String @id @default(cuid()) userId String? @unique email String @unique firstName String? lastName String? user User? @relation(fields: [userId], references: [id]) orders Order[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model Collection { id String @id @default(cuid()) slug String @unique name String note String? imageUrl String? products Product[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model Product { id String @id @default(cuid()) slug String @unique name String description String story String? status ProductStatus @default(DRAFT) seoTitle String? seoDescription String? collectionId String? collection Collection? @relation(fields: [collectionId], references: [id]) variants ProductVariant[] media MediaAsset[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model ProductVariant { id String @id @default(cuid()) productId String sku String @unique size String? color String? price Int currency String @default("eur") inventory Inventory? product Product @relation(fields: [productId], references: [id], onDelete: Cascade) orderItems OrderItem[] }
-model Inventory { id String @id @default(cuid()) variantId String @unique quantity Int @default(0) reserved Int @default(0) variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade) updatedAt DateTime @updatedAt }
-model Order { id String @id @default(cuid()) orderNumber String @unique status OrderStatus @default(PENDING) paymentStatus String @default("PENDING") totalAmount Int currency String @default("eur") customerEmail String customerId String? userId String? stripeCheckoutSessionId String? customer Customer? @relation(fields: [customerId], references: [id]) user User? @relation(fields: [userId], references: [id]) items OrderItem[] createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model OrderItem { id String @id @default(cuid()) orderId String variantId String? name String quantity Int price Int order Order @relation(fields: [orderId], references: [id], onDelete: Cascade) variant ProductVariant? @relation(fields: [variantId], references: [id]) }
-model Coupon { id String @id @default(cuid()) code String @unique percentOff Int? amountOff Int? active Boolean @default(true) startsAt DateTime? endsAt DateTime? }
-model NewsletterSubscriber { id String @id @default(cuid()) email String @unique status SubscriberStatus @default(SUBSCRIBED) createdAt DateTime @default(now()) updatedAt DateTime @updatedAt }
-model MediaAsset { id String @id @default(cuid()) url String alt String usage String? productId String? product Product? @relation(fields: [productId], references: [id]) createdAt DateTime @default(now()) }
-model EmailEvent { id String @id @default(cuid()) type String recipient String status String payload Json? createdAt DateTime @default(now()) }
-model Setting { id String @id @default(cuid()) key String @unique value Json updatedAt DateTime @updatedAt }
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleName {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+  CUSTOMER
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  PAID
+  FULFILLED
+  CANCELLED
+  REFUNDED
+}
+
+enum SubscriberStatus {
+  SUBSCRIBED
+  UNSUBSCRIBED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String?
+  role         RoleName  @default(CUSTOMER)
+  customer     Customer?
+  orders       Order[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  user      User?    @relation(fields: [userId], references: [id])
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Collection {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  name      String
+  note      String?
+  imageUrl  String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id             String           @id @default(cuid())
+  slug           String           @unique
+  name           String
+  description    String
+  story          String?
+  status         ProductStatus    @default(DRAFT)
+  seoTitle       String?
+  seoDescription String?
+  collectionId   String?
+  collection     Collection?      @relation(fields: [collectionId], references: [id])
+  variants       ProductVariant[]
+  media          MediaAsset[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  sku        String      @unique
+  size       String?
+  color      String?
+  price      Int
+  currency   String      @default("eur")
+  inventory  Inventory?
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+}
+
+model Inventory {
+  id        String         @id @default(cuid())
+  variantId String         @unique
+  quantity  Int            @default(0)
+  reserved  Int            @default(0)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  updatedAt DateTime       @updatedAt
+}
+
+model Order {
+  id                      String      @id @default(cuid())
+  orderNumber             String      @unique
+  status                  OrderStatus @default(PENDING)
+  paymentStatus           String      @default("PENDING")
+  totalAmount             Int
+  currency                String      @default("eur")
+  customerEmail           String
+  customerId              String?
+  userId                  String?
+  stripeCheckoutSessionId String?
+  customer                Customer?   @relation(fields: [customerId], references: [id])
+  user                    User?       @relation(fields: [userId], references: [id])
+  items                   OrderItem[]
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String          @id @default(cuid())
+  orderId   String
+  variantId String?
+  name      String
+  quantity  Int
+  price     Int
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+}
+
+model Coupon {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  percentOff Int?
+  amountOff  Int?
+  active     Boolean   @default(true)
+  startsAt   DateTime?
+  endsAt     DateTime?
+}
+
+model NewsletterSubscriber {
+  id        String           @id @default(cuid())
+  email     String           @unique
+  status    SubscriberStatus @default(SUBSCRIBED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String
+  usage     String?
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model EmailEvent {
+  id        String   @id @default(cuid())
+  type      String
+  recipient String
+  status    String
+  payload   Json?
+  createdAt DateTime @default(now())
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,4 @@
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
+export const metadata = { title: "Cart" };
+export default function Page() { return <><SiteHeader /><main className="container py-16 md:py-24"><p className="eyebrow">Cart</p><h1 className="editorial-heading mt-4 text-6xl md:text-8xl">Held for movement.</h1><div className="mt-12 grid gap-6 md:grid-cols-[1fr_380px]"><section className="border-y border-ink/10 py-6"><p className="text-ink/70">Cart state is wired through the API surface and ready for persistent session storage.</p></section><aside className="bg-asphalt p-6 text-paper"><p className="text-sm text-paper/70">Subtotal</p><p className="mt-2 text-3xl">Calculated at checkout</p><a href="/checkout" className="focus-ring mt-8 block bg-paper px-5 py-3 text-center text-sm text-ink">Continue to checkout</a></aside></div></main><SiteFooter /></>; }

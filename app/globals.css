@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+:root { --font-sans: "Inter", "Helvetica Neue", Arial, sans-serif; --font-editorial: "Times New Roman", Georgia, serif; --header-height: 72px; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; background: #f4f1ea; }
+body { margin: 0; color: #12120f; background: #f4f1ea; font-family: var(--font-sans); text-rendering: optimizeLegibility; }
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; height: auto; }
+button, input, textarea, select { font: inherit; }
+::selection { background: #12120f; color: #f4f1ea; }
+.container { width: min(100% - 32px, 1440px); margin-inline: auto; }
+.eyebrow { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: #5b5a52; }
+.editorial-heading { font-family: var(--font-editorial); font-weight: 400; line-height: .95; letter-spacing: 0; }
+.focus-ring { outline: 2px solid transparent; outline-offset: 3px; }
+.focus-ring:focus-visible { outline-color: #8f1f1f; }
+.grain { position: relative; isolation: isolate; }
+.grain::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .08; background-image: linear-gradient(90deg, rgba(18,18,15,.08) 1px, transparent 1px), linear-gradient(rgba(18,18,15,.05) 1px, transparent 1px); background-size: 28px 28px; mix-blend-mode: multiply; }
+.admin-grid { display: grid; grid-template-columns: minmax(220px,260px) 1fr; min-height: 100vh; }
+@media (max-width: 860px) { .admin-grid { grid-template-columns: 1fr; } }

@@ -1,0 +1,8 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = https://github.com/Kevinn-19-roi/special-bagnon.git
+	fetch = +refs/heads/*:refs/remotes/origin/*

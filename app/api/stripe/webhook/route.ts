@@ -1,5 +1,47 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendOrderConfirmation } from "@/lib/email";
-import { stripe } from "@/lib/stripe";
-export async function POST(request: Request) { const signature = request.headers.get("stripe-signature"); const payload = await request.text(); if (!signature || !process.env.STRIPE_WEBHOOK_SECRET) return NextResponse.json({ error: "Missing signature" }, { status: 400 }); const event = stripe.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET); if (event.type === "checkout.session.completed") { const session = event.data.object; const email = session.customer_details?.email ?? session.customer_email; const order = await prisma.order.create({ data: { orderNumber: "BS-" + Date.now(), status: "PAID", paymentStatus: "PAID", totalAmount: session.amount_total ?? 0, currency: session.currency ?? "eur", stripeCheckoutSessionId: session.id, customerEmail: email ?? "guest@bagnonstreet.local" } }); if (email) await sendOrderConfirmation(email, order.orderNumber); } return NextResponse.json({ received: true }); }
+import { getStripe } from "@/lib/stripe";
+
+export async function POST(request: Request) {
+  const signature = request.headers.get("stripe-signature");
+  const payload = await request.text();
+
+  if (
+    !signature ||
+    !process.env.STRIPE_WEBHOOK_SECRET ||
+    !process.env.STRIPE_SECRET_KEY
+  ) {
+    return NextResponse.json(
+      { error: "Stripe webhook is not configured." },
+      { status: 400 }
+    );
+  }
+
+  const stripe = getStripe();
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    process.env.STRIPE_WEBHOOK_SECRET
+  );
+
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object;
+    const email = session.customer_details?.email ?? session.customer_email;
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: "BS-" + Date.now(),
+        status: "PAID",
+        paymentStatus: "PAID",
+        totalAmount: session.amount_total ?? 0,
+        currency: session.currency ?? "eur",
+        stripeCheckoutSessionId: session.id,
+        customerEmail: email ?? "guest@bagnonstreet.local"
+      }
+    });
+
+    if (email) await sendOrderConfirmation(email, order.orderNumber);
+  }
+
+  return NextResponse.json({ received: true });
+}
